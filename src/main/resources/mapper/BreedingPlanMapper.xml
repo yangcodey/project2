@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.project2.mapper.BreedingPlanMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.project2.entity.BreedingPlan">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="plan_no" property="planNo" jdbcType="VARCHAR"/>
+        <result column="product_id" property="productId" jdbcType="BIGINT"/>
+        <result column="planned_quantity" property="plannedQuantity" jdbcType="INTEGER"/>
+        <result column="start_date" property="startDate" jdbcType="DATE"/>
+        <result column="expected_date" property="expectedDate" jdbcType="DATE"/>
+        <result column="breeding_site" property="breedingSite" jdbcType="VARCHAR"/>
+        <result column="breeding_method" property="breedingMethod" jdbcType="VARCHAR"/>
+        <result column="manager_id" property="managerId" jdbcType="BIGINT"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, plan_no, product_id, planned_quantity, start_date, expected_date, breeding_site, breeding_method, manager_id, status, description, created_at, updated_at
+    </sql>
+
+    <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM breeding_plans
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM breeding_plans
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectByProductId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM breeding_plans
+        WHERE product_id = #{productId}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectByManagerId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM breeding_plans
+        WHERE manager_id = #{managerId}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectByStatus" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM breeding_plans
+        WHERE status = #{status}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectByPlanNo" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM breeding_plans
+        WHERE plan_no = #{planNo}
+    </select>
+
+    <insert id="insert" parameterType="com.example.project2.entity.BreedingPlan" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO breeding_plans (plan_no, product_id, planned_quantity, start_date, expected_date, breeding_site, breeding_method, manager_id, status, description, created_at, updated_at)
+        VALUES (#{planNo}, #{productId}, #{plannedQuantity}, #{startDate}, #{expectedDate}, #{breedingSite}, #{breedingMethod}, #{managerId}, #{status}, #{description}, NOW(), NOW())
+    </insert>
+
+    <update id="update" parameterType="com.example.project2.entity.BreedingPlan">
+        UPDATE breeding_plans
+        <set>
+            <if test="planNo != null">plan_no = #{planNo},</if>
+            <if test="productId != null">product_id = #{productId},</if>
+            <if test="plannedQuantity != null">planned_quantity = #{plannedQuantity},</if>
+            <if test="startDate != null">start_date = #{startDate},</if>
+            <if test="expectedDate != null">expected_date = #{expectedDate},</if>
+            <if test="breedingSite != null">breeding_site = #{breedingSite},</if>
+            <if test="breedingMethod != null">breeding_method = #{breedingMethod},</if>
+            <if test="managerId != null">manager_id = #{managerId},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="description != null">description = #{description},</if>
+            updated_at = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE breeding_plans
+        SET status = #{status}, updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM breeding_plans WHERE id = #{id}
+    </delete>
+
+    <select id="countByStatus" parameterType="java.lang.String" resultType="int">
+        SELECT COUNT(*) FROM breeding_plans WHERE status = #{status}
+    </select>
+
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM breeding_plans
+    </select>
+
+</mapper>

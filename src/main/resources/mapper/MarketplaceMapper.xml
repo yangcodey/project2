@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.project2.mapper.MarketplaceMapper">
+
+    <!-- 产品供应商结果映射 -->
+    <resultMap id="ProductSupplierResultMap" type="com.example.project2.entity.ProductSupplier">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="product_id" property="productId" jdbcType="BIGINT"/>
+        <result column="supplier_id" property="supplierId" jdbcType="BIGINT"/>
+        <result column="supplier_price" property="supplierPrice" jdbcType="DECIMAL"/>
+        <result column="min_order_quantity" property="minOrderQuantity" jdbcType="INTEGER"/>
+        <result column="max_order_quantity" property="maxOrderQuantity" jdbcType="INTEGER"/>
+        <result column="lead_time" property="leadTime" jdbcType="INTEGER"/>
+        <result column="is_active" property="isActive" jdbcType="TINYINT"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 采购订单结果映射 -->
+    <resultMap id="SellerPurchaseOrderResultMap" type="com.example.project2.entity.SellerPurchaseOrder">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="order_no" property="orderNo" jdbcType="VARCHAR"/>
+        <result column="buyer_id" property="buyerId" jdbcType="BIGINT"/>
+        <result column="supplier_id" property="supplierId" jdbcType="BIGINT"/>
+        <result column="product_id" property="productId" jdbcType="BIGINT"/>
+        <result column="quantity" property="quantity" jdbcType="INTEGER"/>
+        <result column="unit_price" property="unitPrice" jdbcType="DECIMAL"/>
+        <result column="total_amount" property="totalAmount" jdbcType="DECIMAL"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <result column="delivery_address" property="deliveryAddress" jdbcType="VARCHAR"/>
+        <result column="contact_phone" property="contactPhone" jdbcType="VARCHAR"/>
+        <result column="notes" property="notes" jdbcType="VARCHAR"/>
+        <result column="order_time" property="orderTime" jdbcType="TIMESTAMP"/>
+        <result column="confirmed_time" property="confirmedTime" jdbcType="TIMESTAMP"/>
+        <result column="shipped_time" property="shippedTime" jdbcType="TIMESTAMP"/>
+        <result column="delivered_time" property="deliveredTime" jdbcType="TIMESTAMP"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 销售方库存结果映射 -->
+    <resultMap id="SellerInventoryResultMap" type="com.example.project2.entity.SellerInventory">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="seller_id" property="sellerId" jdbcType="BIGINT"/>
+        <result column="product_id" property="productId" jdbcType="BIGINT"/>
+        <result column="available_quantity" property="availableQuantity" jdbcType="INTEGER"/>
+        <result column="reserved_quantity" property="reservedQuantity" jdbcType="INTEGER"/>
+        <result column="total_quantity" property="totalQuantity" jdbcType="INTEGER"/>
+        <result column="min_stock_level" property="minStockLevel" jdbcType="INTEGER"/>
+        <result column="max_stock_level" property="maxStockLevel" jdbcType="INTEGER"/>
+        <result column="cost_price" property="costPrice" jdbcType="DECIMAL"/>
+        <result column="selling_price" property="sellingPrice" jdbcType="DECIMAL"/>
+        <result column="is_active" property="isActive" jdbcType="TINYINT"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 获取产品供应商列表 -->
+    <select id="getProductSuppliers" parameterType="java.lang.Long" resultMap="ProductSupplierResultMap">
+        SELECT ps.*, u.real_name as supplier_name
+        FROM product_suppliers ps
+        LEFT JOIN users u ON ps.supplier_id = u.id
+        WHERE ps.product_id = #{productId} AND ps.is_active = 1
+        ORDER BY ps.supplier_price ASC
+    </select>
+
+    <!-- 获取商城产品列表 -->
+    <select id="getMarketplaceProducts" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT 
+            mp.id,
+            mp.product_id,
+            mp.seller_id,
+            mp.title,
+            mp.description,
+            mp.images,
+            mp.category_id,
+            mp.tags,
+            mp.is_featured,
+            mp.is_hot,
+            mp.view_count,
+            mp.like_count,
+            p.name as product_name,
+            p.variety,
+            p.specification,
+            p.image_url,
+            u.real_name as seller_name,
+            si.available_quantity,
+            si.selling_price,
+            ps.supplier_price,
+            ps.min_order_quantity,
+            ps.max_order_quantity,
+            ps.lead_time
+        FROM marketplace_products mp
+        LEFT JOIN products p ON mp.product_id = p.id
+        LEFT JOIN users u ON mp.seller_id = u.id
+        LEFT JOIN seller_inventory si ON mp.seller_id = si.seller_id AND mp.product_id = si.product_id
+        LEFT JOIN product_suppliers ps ON mp.product_id = ps.product_id AND mp.seller_id = ps.supplier_id
+        WHERE mp.is_active = 1
+        <if test="params.keyword != null and params.keyword != ''">
+            AND (mp.title LIKE CONCAT('%', #{params.keyword}, '%') 
+                 OR p.name LIKE CONCAT('%', #{params.keyword}, '%')
+                 OR mp.description LIKE CONCAT('%', #{params.keyword}, '%'))
+        </if>
+        <if test="params.categoryId != null">
+            AND mp.category_id = #{params.categoryId}
+        </if>
+        <if test="params.variety != null and params.variety != ''">
+            AND p.variety = #{params.variety}
+        </if>
+        ORDER BY mp.is_featured DESC, mp.is_hot DESC, mp.view_count DESC
+    </select>
+
+    <!-- 创建采购订单 -->
+    <insert id="createPurchaseOrder" parameterType="com.example.project2.entity.SellerPurchaseOrder" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO seller_purchase_orders (
+            order_no, buyer_id, supplier_id, product_id, quantity, unit_price, 
+            total_amount, status, delivery_address, contact_phone, notes, 
+            order_time, created_at, updated_at
+        ) VALUES (
+            #{orderNo}, #{buyerId}, #{supplierId}, #{productId}, #{quantity}, 
+            #{unitPrice}, #{totalAmount}, #{status}, #{deliveryAddress}, 
+            #{contactPhone}, #{notes}, #{orderTime}, NOW(), NOW()
+        )
+    </insert>
+
+    <!-- 根据ID获取采购订单 -->
+    <select id="getPurchaseOrderById" parameterType="java.lang.Long" resultMap="SellerPurchaseOrderResultMap">
+        SELECT * FROM seller_purchase_orders WHERE id = #{id}
+    </select>
+
+    <!-- 获取采购方的采购订单 -->
+    <select id="getBuyerPurchaseOrders" parameterType="java.lang.Long" resultMap="SellerPurchaseOrderResultMap">
+        SELECT spo.*, p.name as product_name, u.real_name as supplier_name
+        FROM seller_purchase_orders spo
+        LEFT JOIN products p ON spo.product_id = p.id
+        LEFT JOIN users u ON spo.supplier_id = u.id
+        WHERE spo.buyer_id = #{buyerId}
+        ORDER BY spo.order_time DESC
+    </select>
+
+    <!-- 获取供应商的供应订单 -->
+    <select id="getSupplierPurchaseOrders" parameterType="java.lang.Long" resultMap="SellerPurchaseOrderResultMap">
+        SELECT spo.*, p.name as product_name, u.real_name as buyer_name
+        FROM seller_purchase_orders spo
+        LEFT JOIN products p ON spo.product_id = p.id
+        LEFT JOIN users u ON spo.buyer_id = u.id
+        WHERE spo.supplier_id = #{supplierId}
+        ORDER BY spo.order_time DESC
+    </select>
+
+    <!-- 更新采购订单状态 -->
+    <update id="updatePurchaseOrderStatus">
+        UPDATE seller_purchase_orders 
+        SET status = #{status}, updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新订单确认时间 -->
+    <update id="updatePurchaseOrderConfirmedTime">
+        UPDATE seller_purchase_orders 
+        SET confirmed_time = #{confirmedTime}, updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新订单发货时间 -->
+    <update id="updatePurchaseOrderShippedTime">
+        UPDATE seller_purchase_orders 
+        SET shipped_time = #{shippedTime}, updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新订单送达时间 -->
+    <update id="updatePurchaseOrderDeliveredTime">
+        UPDATE seller_purchase_orders 
+        SET delivered_time = #{deliveredTime}, updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 获取销售方库存 -->
+    <select id="getSellerInventory" parameterType="java.lang.Long" resultMap="SellerInventoryResultMap">
+        SELECT si.*, p.name as product_name, p.variety, p.specification
+        FROM seller_inventory si
+        LEFT JOIN products p ON si.product_id = p.id
+        WHERE si.seller_id = #{sellerId} AND si.is_active = 1
+        ORDER BY si.updated_at DESC
+    </select>
+
+    <!-- 更新库存 -->
+    <update id="updateInventory">
+        UPDATE seller_inventory 
+        SET 
+            available_quantity = #{inventory.availableQuantity},
+            reserved_quantity = #{inventory.reservedQuantity},
+            total_quantity = #{inventory.totalQuantity},
+            min_stock_level = #{inventory.minStockLevel},
+            max_stock_level = #{inventory.maxStockLevel},
+            cost_price = #{inventory.costPrice},
+            selling_price = #{inventory.sellingPrice},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 获取商城产品总数 -->
+    <select id="getTotalMarketplaceProducts" resultType="int">
+        SELECT COUNT(*) FROM marketplace_products WHERE is_active = 1
+    </select>
+
+    <!-- 获取供应商总数 -->
+    <select id="getTotalSuppliers" resultType="int">
+        SELECT COUNT(DISTINCT supplier_id) FROM product_suppliers WHERE is_active = 1
+    </select>
+
+    <!-- 获取采购订单总数 -->
+    <select id="getTotalPurchaseOrders" resultType="int">
+        SELECT COUNT(*) FROM seller_purchase_orders
+    </select>
+
+    <!-- 获取采购总金额 -->
+    <select id="getTotalPurchaseAmount" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(total_amount), 0) FROM seller_purchase_orders 
+        WHERE status IN ('CONFIRMED', 'SHIPPED', 'DELIVERED', 'COMPLETED')
+    </select>
+
+    <!-- 获取活跃供应商数 -->
+    <select id="getActiveSuppliers" resultType="int">
+        SELECT COUNT(DISTINCT supplier_id) FROM seller_purchase_orders 
+        WHERE order_time >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    </select>
+
+    <!-- 获取待处理订单数 -->
+    <select id="getPendingOrders" resultType="int">
+        SELECT COUNT(*) FROM seller_purchase_orders WHERE status = 'PENDING'
+    </select>
+
+</mapper>
