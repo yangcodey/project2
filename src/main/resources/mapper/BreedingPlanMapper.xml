@@ -108,4 +108,12 @@
         SELECT COUNT(*) FROM breeding_plans
     </select>
 
+    <select id="getTotalPlannedQuantity" resultType="int">
+        SELECT COALESCE(SUM(planned_quantity), 0) FROM breeding_plans WHERE status != 'CANCELLED'
+    </select>
+
+    <select id="getAveragePlannedQuantity" resultType="int">
+        SELECT COALESCE(AVG(planned_quantity), 0) FROM breeding_plans WHERE status != 'CANCELLED'
+    </select>
+
 </mapper>

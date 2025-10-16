@@ -115,4 +115,39 @@
         DELETE FROM orders WHERE id = #{id}
     </delete>
 
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM orders
+    </select>
+
+    <select id="countByStatus" parameterType="java.lang.String" resultType="int">
+        SELECT COUNT(*) FROM orders WHERE status = #{status}
+    </select>
+
+    <select id="getTotalAmount" resultType="double">
+        SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status != 'CANCELLED'
+    </select>
+
+    <select id="getAverageOrderValue" resultType="double">
+        SELECT COALESCE(AVG(total_amount), 0) FROM orders WHERE status != 'CANCELLED'
+    </select>
+
+    <select id="getMaxOrderValue" resultType="double">
+        SELECT COALESCE(MAX(total_amount), 0) FROM orders WHERE status != 'CANCELLED'
+    </select>
+
+    <select id="getMinOrderValue" resultType="double">
+        SELECT COALESCE(MIN(total_amount), 0) FROM orders WHERE status != 'CANCELLED'
+    </select>
+
+    <select id="getOrderTrend" resultType="map">
+        SELECT 
+            DATE(created_at) as date,
+            COUNT(*) as order_count,
+            COALESCE(SUM(total_amount), 0) as total_amount
+        FROM orders
+        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        GROUP BY DATE(created_at)
+        ORDER BY date DESC
+    </select>
+
 </mapper>

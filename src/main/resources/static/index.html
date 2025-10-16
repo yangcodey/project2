@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>侬帮我养在线销售预约系统</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #409EFF;
+            margin-bottom: 10px;
+        }
+        .status {
+            background: #e8f5e8;
+            border: 1px solid #67c23a;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .api-info {
+            background: #f0f9ff;
+            border: 1px solid #409eff;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #409EFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        .link:hover {
+            background: #337ecc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>侬帮我养在线销售预约系统</h1>
+            <p>基于Spring Boot + Vue.js的现代化农产品销售平台</p>
+        </div>
+        
+        <div class="status">
+            <h3>✅ 系统状态</h3>
+            <p>后端服务已成功启动，端口：8080</p>
+            <p>数据库连接：正常</p>
+            <p>API接口：可用</p>
+        </div>
+        
+        <div class="api-info">
+            <h3>🔗 API接口信息</h3>
+            <p><strong>基础URL：</strong> http://localhost:8080/api</p>
+            <p><strong>用户接口：</strong> /api/users</p>
+            <p><strong>产品接口：</strong> /api/products</p>
+            <p><strong>订单接口：</strong> /api/orders</p>
+            <p><strong>统计接口：</strong> /api/statistics</p>
+        </div>
+        
+        <div class="links">
+            <a href="/api/users" class="link">用户API</a>
+            <a href="/api/products" class="link">产品API</a>
+            <a href="/api/orders" class="link">订单API</a>
+            <a href="/api/statistics/overview" class="link">统计API</a>
+        </div>
+        
+        <div style="margin-top: 30px; padding: 15px; background: #fff7e6; border: 1px solid #ffb84d; border-radius: 4px;">
+            <h3>📝 使用说明</h3>
+            <p>1. 前端项目需要单独启动：<code>cd vite-project && pnpm dev</code></p>
+            <p>2. 前端访问地址：http://localhost:5173</p>
+            <p>3. 后端API文档：可通过Postman等工具测试接口</p>
+        </div>
+    </div>
+</body>
+</html>
+

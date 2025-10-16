@@ -89,4 +89,41 @@
         DELETE FROM users WHERE id = #{id}
     </delete>
 
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM users
+    </select>
+
+    <select id="countByRole" parameterType="java.lang.String" resultType="int">
+        SELECT COUNT(*) FROM users WHERE role = #{role}
+    </select>
+
+    <select id="countByStatus" parameterType="java.lang.Integer" resultType="int">
+        SELECT COUNT(*) FROM users WHERE status = #{status}
+    </select>
+
+    <select id="getRegistrationTrend" resultType="map">
+        SELECT 
+            DATE(created_at) as date,
+            COUNT(*) as count
+        FROM users
+        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        GROUP BY DATE(created_at)
+        ORDER BY date DESC
+    </select>
+
+    <select id="getUserPurchaseStats" resultType="map">
+        SELECT 
+            u.id as userId,
+            u.username,
+            u.real_name as realName,
+            COUNT(o.id) as orderCount,
+            COALESCE(SUM(o.total_amount), 0) as totalAmount
+        FROM users u
+        LEFT JOIN orders o ON u.id = o.buyer_id
+        WHERE u.role = 'BUYER'
+        GROUP BY u.id, u.username, u.real_name
+        ORDER BY totalAmount DESC
+        LIMIT 20
+    </select>
+
 </mapper>

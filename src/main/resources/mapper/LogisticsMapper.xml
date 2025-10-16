@@ -119,4 +119,13 @@
         SELECT COUNT(*) FROM logistics
     </select>
 
+    <select id="getCompanyDistribution" resultType="map">
+        SELECT 
+            company,
+            COUNT(*) as count
+        FROM logistics
+        GROUP BY company
+        ORDER BY count DESC
+    </select>
+
 </mapper>
